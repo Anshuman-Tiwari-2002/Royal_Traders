@@ -55,7 +55,7 @@ const Categories = () => {
                   </div>
                   <CardContent className="p-5">
                     <h3 className="font-medium text-lg mb-2">{category.name}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{category.description}</p>
+                    <p className="text-gray-600 text-sm mb-4">Explore our {category.name.toLowerCase()} collection</p>
                     <Button variant="outline" size="sm" className="mt-2">
                       Browse Products
                     </Button>

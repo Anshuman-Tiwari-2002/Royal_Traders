@@ -40,6 +40,8 @@ const testimonials = [
 ];
 
 const TestimonialSection = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
   return (
     <section className="py-16 bg-wood-50">
       <div className="container mx-auto px-4">

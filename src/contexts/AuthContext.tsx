@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { User } from '../types';
 import { toast } from 'sonner';
@@ -6,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
+  socialLogin: (provider: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -57,6 +59,28 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       return false;
     }
   };
+  
+  const socialLogin = async (provider: string): Promise<boolean> => {
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const mockUser: User = {
+        id: `${provider.toLowerCase()}-123`,
+        name: `${provider} User`,
+        email: `user@${provider.toLowerCase()}.example.com`,
+        isLoggedIn: true
+      };
+      
+      setUser(mockUser);
+      localStorage.setItem('user', JSON.stringify(mockUser));
+      toast.success(`Successfully logged in with ${provider}`);
+      return true;
+    } catch (error) {
+      console.error(`${provider} login error:`, error);
+      toast.error(`${provider} login failed`);
+      return false;
+    }
+  };
 
   const logout = () => {
     setUser(null);
@@ -69,6 +93,7 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       user,
       login,
       register,
+      socialLogin,
       logout,
       isAuthenticated: !!user
     }}>

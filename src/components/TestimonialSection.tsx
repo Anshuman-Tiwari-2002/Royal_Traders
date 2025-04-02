@@ -25,7 +25,7 @@ const testimonials = [
     id: 3,
     name: 'Emily Rodriguez',
     role: 'Architect',
-    content: 'As someone who appreciates fine craftsmanship, I'm thoroughly impressed with Royal Traders. Their wooden products are both beautiful and functional.',
+    content: 'As someone who appreciates fine craftsmanship, I\'m thoroughly impressed with Royal Traders. Their wooden products are both beautiful and functional.',
     rating: 4,
     avatar: 'https://randomuser.me/api/portraits/women/63.jpg'
   },

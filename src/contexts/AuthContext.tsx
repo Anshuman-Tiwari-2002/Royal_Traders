@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { User } from '../types';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
@@ -18,13 +17,9 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // This is a mock implementation
-      // In a real app, this would call an API endpoint
       if (email && password) {
-        // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Mock user data
         const mockUser: User = {
           id: '123',
           name: 'John Doe',
@@ -48,10 +43,7 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
 
   const register = async (name: string, email: string, password: string): Promise<boolean> => {
     try {
-      // This is a mock implementation
-      // In a real app, this would call an API endpoint
       if (name && email && password) {
-        // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         toast.success('Registration successful! Please log in.');

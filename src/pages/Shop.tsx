@@ -8,7 +8,9 @@ import {
   List, 
   SlidersHorizontal,
   ChevronDown,
-  X
+  X,
+  Star,
+  ShoppingCart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {

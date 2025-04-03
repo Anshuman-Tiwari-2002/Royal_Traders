@@ -1,73 +1,99 @@
-# Welcome to your Lovable project
+# Royal Traders
 
-## Project info
+A full-stack application for Royal Traders.
 
-**URL**: https://lovable.dev/projects/4ee7fa82-72f5-40d4-8367-03e4160dedf2
+## Project Structure
 
-## How can I edit this code?
+This project is split into two main parts:
 
-There are several ways of editing your application.
+### Frontend (`/frontend`)
+- React + TypeScript application
+- Built with Vite
+- Uses Tailwind CSS for styling
+- Shadcn UI components
+- Located in the `frontend` directory
 
-**Use Lovable**
+### Backend (`/backend`)
+- Express.js + TypeScript server
+- MongoDB database
+- RESTful API
+- Located in the `backend` directory
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/4ee7fa82-72f5-40d4-8367-03e4160dedf2) and start prompting.
+## Development
 
-Changes made via Lovable will be committed automatically to this repo.
+### Frontend Development
+1. Navigate to the frontend directory:
+```bash
+cd frontend
+```
 
-**Use your preferred IDE**
+2. Install dependencies:
+```bash
+npm install
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The frontend will be available at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Backend Development
+1. Navigate to the backend directory:
+```bash
+cd backend
+```
 
-**Use GitHub Codespaces**
+2. Install dependencies:
+```bash
+npm install
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+3. Start the development server:
+```bash
+npm run dev
+```
 
-## What technologies are used for this project?
+The backend API will be available at `http://localhost:5000`
 
-This project is built with .
+## Production Deployment
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Each part (frontend and backend) can be deployed independently:
 
-## How can I deploy this project?
+### Frontend
+1. Build the frontend:
+```bash
+cd frontend
+npm run build
+```
 
-Simply open [Lovable](https://lovable.dev/projects/4ee7fa82-72f5-40d4-8367-03e4160dedf2) and click on Share -> Publish.
+2. Deploy the contents of the `dist` directory to your web server.
 
-## Can I connect a custom domain to my Lovable project?
+### Backend
+1. Build the backend:
+```bash
+cd backend
+npm run build
+```
 
-Yes it is!
+2. Start the production server:
+```bash
+npm start
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Environment Variables
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Frontend
+Create a `.env` file in the frontend directory with:
+```
+VITE_API_URL=http://localhost:5000
+```
+
+### Backend
+Create a `.env` file in the backend directory with:
+```
+PORT=5000
+MONGODB_URI=your_mongodb_uri
+NODE_ENV=production
+``` 

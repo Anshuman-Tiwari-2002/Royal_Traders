@@ -92,4 +92,4 @@ UserSchema.statics.hashPassword = async function(password: string): Promise<stri
   return bcrypt.hash(password, salt);
 };
 
-export default mongoose.model<IUser, IUserModel>('User', UserSchema); 
+export default mongoose.model<IUser, IUserModel>('User', UserSchema);

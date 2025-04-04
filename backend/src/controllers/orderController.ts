@@ -3,6 +3,11 @@ import Order from '../models/Order';
 
 export const getOrders = async (req: Request, res: Response) => {
   try {
+    // Check if user exists
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
     const orders = await Order.find({ user: req.user._id })
       .populate('items.product', 'name image price')
       .sort({ createdAt: -1 });
@@ -16,6 +21,11 @@ export const getOrders = async (req: Request, res: Response) => {
 
 export const getOrderById = async (req: Request, res: Response) => {
   try {
+    // Check if user exists
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
     const order = await Order.findOne({
       _id: req.params.id,
       user: req.user._id

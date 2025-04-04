@@ -1,5 +1,5 @@
 import { CartItem } from '../types';
-import { api } from './api';
+import api from './api';
 
 export interface ServerCartItem {
   product: {
@@ -50,31 +50,75 @@ const transformServerCart = (serverCart: ServerCart): CartItem[] => {
 export const cartService = {
   async getCart(): Promise<CartItem[]> {
     try {
+      console.log('Fetching cart...');
+      const token = localStorage.getItem('token');
+      console.log('Token:', token);
       const response = await api.get<ServerCart>('/cart');
-      return transformServerCart(response.data);
+      const cartData = response.data;
+      console.log('Cart response:', cartData);
+      
+      if (!cartData || !cartData._id || !cartData.items) {
+        console.error('Invalid cart response:', cartData);
+        return [];
+      }
+      
+      return transformServerCart(cartData);
     } catch (error) {
       console.error('Failed to fetch cart:', error);
-      return [];
+      throw error;
     }
   },
 
   async addToCart(productId: string, quantity: number): Promise<CartItem[]> {
-    const response = await api.post<ServerCart>('/cart/items', { productId, quantity });
-    return transformServerCart(response.data);
+    try {
+      console.log('Adding to cart:', { productId, quantity });
+      const token = localStorage.getItem('token');
+      console.log('Token:', token);
+      const response = await api.post<ServerCart>('/cart/items', { productId, quantity });
+      return transformServerCart(response.data);
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      throw error;
+    }
   },
 
   async updateQuantity(productId: string, quantity: number): Promise<CartItem[]> {
-    const response = await api.put<ServerCart>(`/cart/items/${productId}`, { quantity });
-    return transformServerCart(response.data);
+    try {
+      console.log('Updating quantity:', { productId, quantity });
+      const token = localStorage.getItem('token');
+      console.log('Token:', token);
+      const response = await api.put<ServerCart>(`/cart/items/${productId}`, { quantity });
+      console.log('Update quantity response:', response.data);
+      return transformServerCart(response.data);
+    } catch (error) {
+      console.error('Failed to update item quantity:', error);
+      throw error;
+    }
   },
 
   async removeFromCart(productId: string): Promise<CartItem[]> {
-    const response = await api.delete<ServerCart>(`/cart/items/${productId}`);
-    return transformServerCart(response.data);
+    try {
+      console.log('Removing from cart:', productId);
+      const token = localStorage.getItem('token');
+      console.log('Token:', token);
+      const response = await api.delete<ServerCart>(`/cart/items/${productId}`);
+      return transformServerCart(response.data);
+    } catch (error) {
+      console.error('Failed to remove from cart:', error);
+      throw error;
+    }
   },
 
   async clearCart(): Promise<CartItem[]> {
-    const response = await api.delete<ServerCart>('/cart');
-    return transformServerCart(response.data);
+    try {
+      console.log('Clearing cart...');
+      const token = localStorage.getItem('token');
+      console.log('Token:', token);
+      const response = await api.delete<ServerCart>('/cart');
+      return transformServerCart(response.data);
+    } catch (error) {
+      console.error('Failed to clear cart:', error);
+      throw error;
+    }
   }
 };

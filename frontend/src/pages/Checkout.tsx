@@ -212,7 +212,7 @@ const Checkout = () => {
               <h2 className="text-xl font-medium mb-4">Order Summary</h2>
               <div className="divide-y">
                 {items.map((item) => (
-                  <div key={item.product.id} className="py-4 flex justify-between">
+                  <div key={item.product._id} className="py-4 flex justify-between">
                     <div className="flex items-center">
                       <img 
                         src={item.product.images[0]} 

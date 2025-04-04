@@ -31,6 +31,7 @@ const RegisterForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -68,25 +69,16 @@ const RegisterForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const error = validateForm();
-    if (error) {
-      toast.error(error);
-      return;
-    }
-    
+    setError('');
     setIsLoading(true);
     
     try {
-      const { confirmPassword, ...registrationData } = formData;
-      const success = await register(registrationData);
+      const success = await register(formData);
       if (success) {
-        toast.success('Registration successful! Please log in.');
         navigate('/login');
       }
-    } catch (error) {
-      console.error('Registration error:', error);
-      toast.error(error instanceof Error ? error.message : 'Registration failed. Please try again.');
+    } catch (err) {
+      setError('Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

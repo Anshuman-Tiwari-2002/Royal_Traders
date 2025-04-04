@@ -4,7 +4,11 @@ import Product from '../models/Product';
 
 export const getWishlist = async (req: Request, res: Response) => {
   try {
-    const wishlist = await Wishlist.findOne({ userId: req.user.id })
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    const wishlist = await Wishlist.findOne({ userId: req.user._id })
       .populate('products')
       .exec();
 
@@ -21,6 +25,10 @@ export const getWishlist = async (req: Request, res: Response) => {
 
 export const addToWishlist = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
     const { productId } = req.body;
 
     // Check if product exists
@@ -44,10 +52,6 @@ export const addToWishlist = async (req: Request, res: Response) => {
     ).populate('products');
 
     res.json(wishlist.products);
-
-    // Populate the products before sending response
-    await wishlist.populate('products');
-    res.json(wishlist.products);
   } catch (error) {
     console.error('Error adding to wishlist:', error);
     res.status(500).json({ message: 'Error adding to wishlist' });
@@ -56,6 +60,10 @@ export const addToWishlist = async (req: Request, res: Response) => {
 
 export const removeFromWishlist = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
     const { productId } = req.params;
 
     const wishlist = await Wishlist.findOne({ userId: req.user._id });

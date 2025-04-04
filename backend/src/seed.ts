@@ -47,6 +47,7 @@ const products = [
     description: 'Classic wooden building blocks made from sustainable wood',
     price: 2499,
     stock: 50,
+    stockQuantity: 50,
     category: 'Wooden Toys',
     images: [
       '/images/products/wooden-blocks/main.jpg',
@@ -57,13 +58,18 @@ const products = [
       material: 'Natural Wood',
       ageGroup: '3+ years',
       pieces: 100
-    }
+    },
+    featured: true,
+    rating: 4.8,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     name: 'Wooden Rocking Horse',
     description: 'Traditional wooden rocking horse with smooth finish',
     price: 7499,
     stock: 20,
+    stockQuantity: 20,
     category: 'Wooden Toys',
     images: [
       '/images/products/rocking-horse/main.jpg',
@@ -74,13 +80,18 @@ const products = [
       material: 'Solid Wood',
       ageGroup: '1-3 years',
       weight: '5 kg'
-    }
+    },
+    featured: true,
+    rating: 4.9,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     name: 'Wooden Coffee Table',
     description: 'Handcrafted wooden coffee table with modern design',
     price: 16999,
     stock: 15,
+    stockQuantity: 15,
     category: 'Wooden Furniture',
     images: [
       '/images/products/coffee-table/main.jpg',
@@ -91,13 +102,18 @@ const products = [
       material: 'Oak Wood',
       dimensions: '120x60x45 cm',
       finish: 'Natural'
-    }
+    },
+    featured: true,
+    rating: 4.7,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     name: 'Wooden Wall Art',
     description: 'Decorative wooden wall art with intricate carvings',
     price: 6499,
     stock: 30,
+    stockQuantity: 30,
     category: 'Wooden Decor',
     images: [
       '/images/products/wall-art/main.jpg',
@@ -108,13 +124,18 @@ const products = [
       material: 'Teak Wood',
       dimensions: '60x40 cm',
       style: 'Traditional'
-    }
+    },
+    featured: false,
+    rating: 4.6,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     name: 'Wooden Kitchen Utensil Set',
     description: 'Premium wooden kitchen utensils set with natural finish',
     price: 3999,
     stock: 25,
+    stockQuantity: 25,
     category: 'Wooden Kitchen',
     images: [
       '/images/products/kitchen-utensils/main.jpg',
@@ -125,13 +146,18 @@ const products = [
       material: 'Maple Wood',
       pieces: 12,
       finish: 'Food Safe'
-    }
+    },
+    featured: false,
+    rating: 4.5,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     name: 'Maple Cutting Board',
     description: 'Professional grade maple wood cutting board',
     price: 2999,
     stock: 20,
+    stockQuantity: 20,
     category: 'Wooden Kitchen',
     images: [
       '/images/products/cutting-board/main.jpg',
@@ -142,7 +168,11 @@ const products = [
       material: 'Hard Maple',
       dimensions: '45x30x2.5 cm',
       finish: 'Food Safe'
-    }
+    },
+    featured: false,
+    rating: 4.4,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
 
@@ -235,7 +265,12 @@ async function seedDatabase() {
     await Promise.all(createdUsers.map(user => 
       Promise.all([
         Cart.create({ user: user._id, items: [], totalAmount: 0 }),
-        Wishlist.create({ user: user._id, products: [] })
+        Wishlist.create({
+          userId: user._id,
+          products: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        })
       ])
     ));
     console.log('Created carts and wishlists');

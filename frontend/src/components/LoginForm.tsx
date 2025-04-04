@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -20,8 +20,18 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [hasRedirected, setHasRedirected] = useState(false);
+
+  // Redirect when authenticated
+  useEffect(() => {
+    if (isAuthenticated && !authLoading && !hasRedirected) {
+      setHasRedirected(true);
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, authLoading, navigate, hasRedirected]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -44,10 +54,11 @@ const LoginForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     
-    const error = validateForm();
-    if (error) {
-      toast.error(error);
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       return;
     }
     
@@ -56,11 +67,15 @@ const LoginForm = () => {
     try {
       const success = await login(formData.email, formData.password);
       if (success) {
-        navigate('/');
+        toast.success('Login successful');
+        setHasRedirected(true);
+        navigate('/', { replace: true });
+      } else {
+        setError('Invalid email or password');
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error(error instanceof Error ? error.message : 'Login failed. Please try again.');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('An error occurred during login');
     } finally {
       setIsLoading(false);
     }
@@ -81,6 +96,20 @@ const LoginForm = () => {
     }
   };
 
+  // If auth is still loading, show a loading state
+  if (authLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-wood-600"></div>
+      </div>
+    );
+  }
+
+  // If already authenticated, don't render the form
+  if (isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50 py-12 px-4">
       <Card className="w-full max-w-md">
@@ -91,6 +120,11 @@ const LoginForm = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email *</Label>

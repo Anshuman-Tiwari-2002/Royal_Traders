@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { toast } from 'sonner';
 import { API_BASE_URL } from '@/config';
 import { Link } from 'react-router-dom';
+import { api } from '@/lib/api';
 
 export interface User {
   id: string;
@@ -14,116 +15,146 @@ export interface User {
   isLoggedIn: boolean;
 }
 
+export interface RegisterUserData {
+  name: string;
+  email: string;
+  password: string;
+  phone?: string;
+  address?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (data: Omit<User, 'id' | 'role' | 'isEmailVerified' | 'isLoggedIn'>) => Promise<boolean>;
+  register: (userData: RegisterUserData) => Promise<boolean>;
   logout: () => void;
-  updateUser: (data: Partial<User>) => void;
+  updateUser: (userData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Check for existing user session on mount
+  // Initialize auth state from localStorage
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    
-    if (storedUser && token) {
+    const initializeAuth = async () => {
+      if (isInitialized) return;
+      
       try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
+        const token = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('user');
+        
+        if (token && storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            // Verify token is still valid
+            const response = await api.get('/auth/verify');
+            if (response.ok) {
+              setUser(parsedUser);
+              setIsAuthenticated(true);
+            } else {
+              // Token is invalid, clear storage
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+            }
+          } catch (error) {
+            console.error('Error parsing stored user:', error);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+          }
+        }
       } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('user');
+        console.error('Error initializing auth state:', error);
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      } finally {
+        setIsLoading(false);
+        setIsInitialized(true);
       }
-    }
-  }, []);
+    };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+    initializeAuth();
+  }, [isInitialized]);
+
+  const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+      const response = await api.post('/auth/login', { email, password });
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        setUser(response.user);
+        setIsAuthenticated(true);
+        return true;
       }
-
-      setUser(data.user);
-      setIsAuthenticated(true);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      toast.success('Successfully logged in');
-      return true;
+      return false;
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(error instanceof Error ? error.message : 'Login failed');
       return false;
     }
   };
 
-  const register = async (data: Omit<User, 'id' | 'role' | 'isEmailVerified' | 'isLoggedIn'>): Promise<boolean> => {
+  const register = async (userData: RegisterUserData): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.message || 'Registration failed');
-      }
-
-      toast.success('Registration successful! Please log in.');
+      const response = await api.post('/auth/register', userData);
+      const { user, token } = response.data;
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      setUser(user);
+      setIsAuthenticated(true);
       return true;
     } catch (error) {
       console.error('Registration error:', error);
-      toast.error(error instanceof Error ? error.message : 'Registration failed');
+      toast.error('Registration failed. Please try again.');
       return false;
     }
   };
 
   const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    toast.success('Successfully logged out');
+    setUser(null);
+    setIsAuthenticated(false);
   };
 
-  const updateUser = (data: Partial<User>) => {
-    if (!user) return;
+  const updateUser = async (userData: Partial<User>) => {
+    try {
+      const response = await api.put('/auth/profile', userData);
+      const updatedUser = response.data.user;
+      
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    } catch (error) {
+      console.error('Profile update error:', error);
+      throw error;
+    }
+  };
 
-    const updatedUser = { ...user, ...data };
-    setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+  const value = {
+    user,
+    isAuthenticated,
+    isLoading,
+    login,
+    register,
+    logout,
+    updateUser
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
 
+// Export the hook as a named export
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -131,3 +162,6 @@ export const useAuth = () => {
   }
   return context;
 };
+
+// Export the provider as default
+export default AuthProvider;

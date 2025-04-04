@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from './ui/card';
 import { useCart } from '../contexts/CartContext';
+import { toast } from 'sonner';
 
 interface ProductCardProps {
   product: Product;
@@ -42,10 +43,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product, 1);
+    console.log('Adding product to cart:', {
+      name: product.name,
+      id: product._id,
+      price: product.price
+    });
+    try {
+      await addToCart(product, 1);
+      toast.success(`Added ${product.name} to cart`);
+    } catch (error) {
+      console.error('Failed to add product to cart:', error);
+      if (!isAuthenticated) {
+        toast.error('Please log in to add items to cart');
+      }
+    }
   };
 
   return (

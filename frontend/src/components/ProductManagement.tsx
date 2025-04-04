@@ -26,7 +26,7 @@ export function ProductManagement() {
 
   const fetchProducts = async () => {
     try {
-      const data = await api.get<Product[]>('/api/products');
+      const data = await api.get('/api/products') as Product[];
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);

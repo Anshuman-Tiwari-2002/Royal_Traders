@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -9,7 +9,8 @@ import {
   X, 
   Heart, 
   User as UserIcon,
-  LogIn
+  LogIn,
+  LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,143 +33,226 @@ import {
 
 const Navbar = () => {
   const { totalItems } = useCart();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, isLoading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center">
-              <span className="text-2xl font-serif font-semibold text-wood-800">Royal Traders</span>
-            </Link>
-          </div>
+          <Link to="/" className="flex items-center">
+            <span className="text-2xl font-serif text-wood-600">Royal Traders</span>
+          </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8">
-            <Link to="/" className="text-gray-700 hover:text-wood-600 font-medium">Home</Link>
-            <Link to="/shop" className="text-gray-700 hover:text-wood-600 font-medium">Shop</Link>
-            <Link to="/categories" className="text-gray-700 hover:text-wood-600 font-medium">Categories</Link>
-            <Link to="/about" className="text-gray-700 hover:text-wood-600 font-medium">About</Link>
-            <Link to="/contact" className="text-gray-700 hover:text-wood-600 font-medium">Contact</Link>
-          </div>
+          <nav className="hidden md:flex space-x-8">
+            <Link to="/shop" className="text-gray-700 hover:text-wood-600">Shop</Link>
+            <Link to="/categories" className="text-gray-700 hover:text-wood-600">Categories</Link>
+            <Link to="/about" className="text-gray-700 hover:text-wood-600">About</Link>
+            <Link to="/contact" className="text-gray-700 hover:text-wood-600">Contact</Link>
+          </nav>
 
-          {/* Search, Cart, User */}
+          {/* Search, Cart, and User */}
           <div className="flex items-center space-x-4">
             {/* Search */}
-            <div className="hidden md:block relative">
-              <Input 
-                type="text" 
-                placeholder="Search products..." 
-                className="pl-10 pr-4 py-2 w-60 border rounded-lg focus:outline-none focus:ring-2 focus:ring-wood-500"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-            </div>
-            
-            {/* Wishlist */}
-            <Link to="/wishlist" className="text-gray-700 hover:text-wood-600">
-              <Heart size={20} />
-            </Link>
-            
-            {/* Cart */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <button className="text-gray-700 hover:text-wood-600 relative">
-                  <ShoppingCart size={20} />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-wood-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {totalItems}
-                    </span>
-                  )}
+            <form onSubmit={handleSearch} className="hidden md:block">
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-64 pr-10"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  <Search className="h-4 w-4" />
                 </button>
-              </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-md">
-                <SheetHeader>
-                  <SheetTitle>Shopping Cart</SheetTitle>
-                  <SheetDescription>
-                    {totalItems === 0 ? 'Your cart is empty' : `${totalItems} items in your cart`}
-                  </SheetDescription>
-                </SheetHeader>
-                {/* Cart items will be rendered here by the CartSheet component */}
-                <div className="mt-8">
-                  <Link to="/cart">
-                    <Button className="w-full bg-wood-600 hover:bg-wood-700">
-                      View Cart & Checkout
-                    </Button>
-                  </Link>
-                </div>
-              </SheetContent>
-            </Sheet>
+              </div>
+            </form>
+
+            {/* Cart */}
+            <Link to="/cart" className="relative">
+              <ShoppingCart className="h-6 w-6 text-gray-700 hover:text-wood-600" />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-wood-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
 
             {/* User Menu */}
-            {isAuthenticated ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="p-1">
-                    <UserIcon size={20} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/account/profile">Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/account/orders">Orders</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/account/wishlist">Wishlist</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout}>
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Link to="/login">
-                <Button variant="ghost" className="p-1">
-                  <LogIn size={20} />
-                </Button>
-              </Link>
+            {!isLoading && (
+              <>
+                {isAuthenticated ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="rounded-full">
+                        <UserIcon className="h-6 w-6 text-gray-700" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/account">Account Overview</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/profile">Profile</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/orders">Orders</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/wishlist">Wishlist</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Link to="/login">
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <LogIn className="h-6 w-6 text-gray-700" />
+                    </Button>
+                  </Link>
+                )}
+              </>
             )}
 
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
-                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </Button>
-            </div>
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden text-gray-700 hover:text-wood-600"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
           </div>
         </div>
-
-        {/* Mobile Navigation Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 space-y-2">
-            <div className="relative mb-4">
-              <Input 
-                type="text" 
-                placeholder="Search products..." 
-                className="pl-10 pr-4 py-2 w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-wood-500"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-            </div>
-            <Link to="/" className="block py-2 text-gray-700 hover:text-wood-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-            <Link to="/shop" className="block py-2 text-gray-700 hover:text-wood-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Shop</Link>
-            <Link to="/categories" className="block py-2 text-gray-700 hover:text-wood-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Categories</Link>
-            <Link to="/about" className="block py-2 text-gray-700 hover:text-wood-600 font-medium" onClick={() => setMobileMenuOpen(false)}>About</Link>
-            <Link to="/contact" className="block py-2 text-gray-700 hover:text-wood-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Contact</Link>
-          </div>
-        )}
       </div>
-    </nav>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-white border-t">
+          <div className="container mx-auto px-4 py-4">
+            <form onSubmit={handleSearch} className="mb-4">
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pr-10"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  <Search className="h-4 w-4" />
+                </button>
+              </div>
+            </form>
+            <nav className="flex flex-col space-y-4">
+              <Link 
+                to="/shop" 
+                className="text-gray-700 hover:text-wood-600"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Shop
+              </Link>
+              <Link 
+                to="/categories" 
+                className="text-gray-700 hover:text-wood-600"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Categories
+              </Link>
+              <Link 
+                to="/about" 
+                className="text-gray-700 hover:text-wood-600"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                About
+              </Link>
+              <Link 
+                to="/contact" 
+                className="text-gray-700 hover:text-wood-600"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link 
+                    to="/account" 
+                    className="text-gray-700 hover:text-wood-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    My Account
+                  </Link>
+                  <Link 
+                    to="/orders" 
+                    className="text-gray-700 hover:text-wood-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Orders
+                  </Link>
+                  <Link 
+                    to="/wishlist" 
+                    className="text-gray-700 hover:text-wood-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Wishlist
+                  </Link>
+                  <button 
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="text-left text-red-600 hover:text-red-700"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link 
+                  to="/login" 
+                  className="text-gray-700 hover:text-wood-600"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+              )}
+            </nav>
+          </div>
+        </div>
+      )}
+    </header>
   );
 };
 

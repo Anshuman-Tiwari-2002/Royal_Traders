@@ -1,9 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { Product } from '../types/product';
-import { Heart, ShoppingCart, Star } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { Button } from './ui/button';
 import {
   Card,
@@ -20,18 +19,12 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { isAuthenticated } = useAuth();
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
   const isInWishlist = wishlist.some(item => item._id === product._id);
 
   const handleWishlistClick = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation when clicking the wishlist button
-    if (!isAuthenticated) {
-      // Handle not authenticated case (e.g., show login modal)
-      return;
-    }
-
     try {
       if (isInWishlist) {
         await removeFromWishlist(product._id);
@@ -46,19 +39,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Adding product to cart:', {
-      name: product.name,
-      id: product._id,
-      price: product.price
-    });
     try {
       await addToCart(product, 1);
       toast.success(`Added ${product.name} to cart`);
     } catch (error) {
       console.error('Failed to add product to cart:', error);
-      if (!isAuthenticated) {
-        toast.error('Please log in to add items to cart');
-      }
+      toast.error('Failed to add item to cart');
     }
   };
 

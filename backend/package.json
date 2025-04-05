@@ -8,10 +8,13 @@
     "dev": "nodemon --exec ts-node src/server.ts",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "ts-node src/seed.ts"
+    "seed": "ts-node src/seed.ts",
+    "seed:categories": "ts-node src/scripts/seedCategories.ts",
+    "test:api": "ts-node src/scripts/testApi.ts"
   },
   "dependencies": {
     "@types/jsonwebtoken": "^9.0.9",
+    "axios": "^1.8.4",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

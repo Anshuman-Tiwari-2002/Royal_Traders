@@ -1,27 +1,15 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { 
   ShoppingCart, 
   Search, 
   Menu, 
   X, 
-  Heart, 
-  User as UserIcon,
-  LogIn,
-  LogOut
+  Heart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Sheet,
   SheetContent,
@@ -31,9 +19,17 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+// Static navigation items
+const navigationItems = [
+  { name: 'Home', path: '/' },
+  { name: 'Shop', path: '/shop' },
+  { name: 'Categories', path: '/categories' },
+  { name: 'About', path: '/about' },
+  { name: 'Contact', path: '/contact' }
+];
+
 const Navbar = () => {
   const { totalItems } = useCart();
-  const { user, logout, isAuthenticated, isLoading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -46,9 +42,17 @@ const Navbar = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const renderNavigationLinks = (isMobile: boolean = false) => {
+    return navigationItems.map((item) => (
+      <Link
+        key={item.path}
+        to={item.path}
+        className="text-gray-700 hover:text-wood-600"
+        onClick={() => isMobile && setMobileMenuOpen(false)}
+      >
+        {item.name}
+      </Link>
+    ));
   };
 
   return (
@@ -62,10 +66,7 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Link to="/shop" className="text-gray-700 hover:text-wood-600">Shop</Link>
-            <Link to="/categories" className="text-gray-700 hover:text-wood-600">Categories</Link>
-            <Link to="/about" className="text-gray-700 hover:text-wood-600">About</Link>
-            <Link to="/contact" className="text-gray-700 hover:text-wood-600">Contact</Link>
+            {renderNavigationLinks()}
           </nav>
 
           {/* Search, Cart, and User */}
@@ -98,48 +99,6 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
-
-            {/* User Menu */}
-            {!isLoading && (
-              <>
-                {isAuthenticated ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-full">
-                        <UserIcon className="h-6 w-6 text-gray-700" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link to="/account">Account Overview</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/profile">Profile</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/orders">Orders</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/wishlist">Wishlist</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Logout
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <Link to="/login">
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                      <LogIn className="h-6 w-6 text-gray-700" />
-                    </Button>
-                  </Link>
-                )}
-              </>
-            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -178,76 +137,7 @@ const Navbar = () => {
               </div>
             </form>
             <nav className="flex flex-col space-y-4">
-              <Link 
-                to="/shop" 
-                className="text-gray-700 hover:text-wood-600"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Shop
-              </Link>
-              <Link 
-                to="/categories" 
-                className="text-gray-700 hover:text-wood-600"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Categories
-              </Link>
-              <Link 
-                to="/about" 
-                className="text-gray-700 hover:text-wood-600"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                About
-              </Link>
-              <Link 
-                to="/contact" 
-                className="text-gray-700 hover:text-wood-600"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Contact
-              </Link>
-              {isAuthenticated ? (
-                <>
-                  <Link 
-                    to="/account" 
-                    className="text-gray-700 hover:text-wood-600"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    My Account
-                  </Link>
-                  <Link 
-                    to="/orders" 
-                    className="text-gray-700 hover:text-wood-600"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Orders
-                  </Link>
-                  <Link 
-                    to="/wishlist" 
-                    className="text-gray-700 hover:text-wood-600"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Wishlist
-                  </Link>
-                  <button 
-                    onClick={() => {
-                      handleLogout();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="text-left text-red-600 hover:text-red-700"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <Link 
-                  to="/login" 
-                  className="text-gray-700 hover:text-wood-600"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Login
-                </Link>
-              )}
+              {renderNavigationLinks(true)}
             </nav>
           </div>
         </div>

@@ -27,7 +27,9 @@ const LoginForm = () => {
 
   // Redirect when authenticated
   useEffect(() => {
+    console.log('Auth state changed:', { isAuthenticated, authLoading, hasRedirected });
     if (isAuthenticated && !authLoading && !hasRedirected) {
+      console.log('Attempting to redirect to home page');
       setHasRedirected(true);
       navigate('/', { replace: true });
     }
@@ -54,10 +56,12 @@ const LoginForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Login form submitted');
     setError('');
     
     const validationError = validateForm();
     if (validationError) {
+      console.log('Validation error:', validationError);
       setError(validationError);
       return;
     }
@@ -65,7 +69,9 @@ const LoginForm = () => {
     setIsLoading(true);
     
     try {
+      console.log('Attempting login with:', formData.email);
       const success = await login(formData.email, formData.password);
+      console.log('Login result:', success);
       if (success) {
         toast.success('Login successful');
         setHasRedirected(true);

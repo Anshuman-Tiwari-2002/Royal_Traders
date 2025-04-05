@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product } from '../types/product';
-import api from '../services/api';
 
 interface WishlistContextType {
   wishlist: Product[];
@@ -27,26 +26,30 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchWishlist();
+    const storedWishlist = localStorage.getItem('wishlist');
+    if (storedWishlist) {
+      try {
+        setWishlist(JSON.parse(storedWishlist));
+      } catch (error) {
+        console.error('Error parsing wishlist from localStorage:', error);
+        setWishlist([]);
+      }
+    }
+    setIsLoading(false);
   }, []);
 
-  const fetchWishlist = async () => {
-    try {
-      const response = await api.get('/wishlist');
-      setWishlist(Array.isArray(response) ? response : []);
-    } catch (error) {
-      console.error('Error fetching wishlist:', error);
-      setWishlist([]); // Ensure wishlist is always an array
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+  }, [wishlist]);
 
   const addToWishlist = async (productId: string) => {
     try {
-      await api.post('/wishlist', { productId });
-      const response = await api.get('/wishlist');
-      setWishlist(Array.isArray(response) ? response : []);
+      setWishlist(prevWishlist => {
+        if (!prevWishlist.some(product => product._id === productId)) {
+          return [...prevWishlist, { _id: productId } as Product];
+        }
+        return prevWishlist;
+      });
     } catch (error) {
       console.error('Error adding to wishlist:', error);
       throw error;
@@ -55,9 +58,9 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const removeFromWishlist = async (productId: string) => {
     try {
-      await api.delete(`/wishlist/${productId}`);
-      const response = await api.get('/wishlist');
-      setWishlist(Array.isArray(response) ? response : []);
+      setWishlist(prevWishlist => 
+        prevWishlist.filter(product => product._id !== productId)
+      );
     } catch (error) {
       console.error('Error removing from wishlist:', error);
       throw error;

@@ -28,7 +28,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
-import { api } from '@/lib/api';
+import { api } from '@/services/api';
 import { toast } from 'sonner';
 
 const Shop = () => {
@@ -40,7 +40,7 @@ const Shop = () => {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryParam || '');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+  const [priceRange, setPriceRange] = useState<number[]>([0, 50000]);
   const [sortOption, setSortOption] = useState<string>('featured');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState<boolean>(false);
@@ -154,7 +154,7 @@ const Shop = () => {
   
   const clearFilters = () => {
     setSelectedCategory('');
-    setPriceRange([0, 1000]);
+    setPriceRange([0, 50000]);
     setSortOption('featured');
   };
 
@@ -211,15 +211,15 @@ const Shop = () => {
                     <div className="space-y-4">
                       <Slider 
                         min={0} 
-                        max={1000} 
-                        step={10}
+                        max={50000} 
+                        step={1000}
                         value={priceRange}
                         onValueChange={handlePriceRangeChange}
                         className="my-4"
                       />
                       <div className="flex justify-between text-sm">
-                        <span>${priceRange[0]}</span>
-                        <span>${priceRange[1]}</span>
+                        <span>₹{priceRange[0].toLocaleString('en-IN')}</span>
+                        <span>₹{priceRange[1].toLocaleString('en-IN')}</span>
                       </div>
                     </div>
                   </AccordionContent>
@@ -321,7 +321,7 @@ const Shop = () => {
                         </div>
                       </div>
                       <div className="flex items-center justify-between mt-4">
-                        <span className="text-xl font-semibold text-wood-800">${product.price.toFixed(2)}</span>
+                        <span className="text-xl font-semibold text-wood-800">₹{product.price.toLocaleString('en-IN')}</span>
                         <Button 
                           onClick={() => addToCart(product, 1)}
                           className="bg-wood-600 hover:bg-wood-700"

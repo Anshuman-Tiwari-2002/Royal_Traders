@@ -1,4 +1,3 @@
-
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Truck, Clock, Globe, DollarSign, Info } from "lucide-react";
@@ -9,14 +8,14 @@ const Shipping = () => {
     {
       title: "Standard Shipping",
       time: "3-5 business days",
-      price: "$10-$20 depending on order size",
-      details: "Available for most locations in the continental US."
+      price: "₹800-₹1500 depending on order size",
+      details: "Available for most locations in India."
     },
     {
       title: "Express Shipping",
       time: "1-2 business days",
-      price: "$25-$45 depending on order size",
-      details: "Available for most urban areas. Order must be placed before 12 PM EST."
+      price: "₹2000-₹3500 depending on order size",
+      details: "Available for most urban areas. Order must be placed before 12 PM IST."
     },
     {
       title: "International Shipping",
@@ -27,7 +26,7 @@ const Shipping = () => {
     {
       title: "Furniture Delivery & Assembly",
       time: "7-10 business days",
-      price: "$50-$150 depending on product complexity",
+      price: "₹4000-₹12000 depending on product complexity",
       details: "Includes delivery to room of choice and basic assembly. Available in select areas only."
     }
   ];

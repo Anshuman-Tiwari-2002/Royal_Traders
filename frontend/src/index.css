@@ -8,6 +8,7 @@
   :root {
     --background: 40 30% 98%;
     --foreground: 30 10% 15%;
+    --border: 30 10% 90%;
     --card: 40 30% 98%;
     --card-foreground: 30 10% 15%;
     --popover: 40 30% 98%;
@@ -22,7 +23,6 @@
     --accent-foreground: 30 50% 35%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 40 30% 98%;
-    --border: 30 20% 85%;
     --input: 30 20% 85%;
     --ring: 30 50% 35%;
     --radius: 0.5rem;

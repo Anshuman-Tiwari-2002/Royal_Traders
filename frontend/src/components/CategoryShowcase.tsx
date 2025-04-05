@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '@/lib/api';
+import { api } from '@/services/api';
 import { Product } from '@/types';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';

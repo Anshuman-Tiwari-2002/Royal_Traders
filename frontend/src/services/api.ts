@@ -1,8 +1,14 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { API_BASE_URL } from '../config';
 
+// Define the error response type
+interface ErrorResponse {
+  message?: string;
+  [key: string]: any;
+}
+
 export const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -19,6 +25,7 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -26,14 +33,31 @@ api.interceptors.request.use(
 // Add response interceptor
 api.interceptors.response.use(
   (response) => response.data,
-  async (error) => {
+  async (error: AxiosError) => {
+    console.error('API Error:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      url: error.config?.url,
+      method: error.config?.method
+    });
+    
     if (error.response?.status === 401) {
       // Handle unauthorized access
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
-    return Promise.reject(error);
+    
+    // Create a more informative error message
+    const errorData = error.response?.data as ErrorResponse;
+    const errorMessage = errorData?.message || 
+                        error.response?.statusText || 
+                        error.message || 
+                        'An error occurred';
+    
+    return Promise.reject(new Error(errorMessage));
   }
 );
 

@@ -58,7 +58,7 @@ const CartSummary = () => {
                   
                   <div className="md:text-center">
                     <span className="md:hidden text-gray-500 mr-2">Price: </span>
-                    ${item.product.price.toFixed(2)}
+                    ₹{item.product.price.toLocaleString('en-IN')}
                   </div>
                   
                   <div className="md:text-center">
@@ -87,7 +87,7 @@ const CartSummary = () => {
                   
                   <div className="md:text-right font-medium">
                     <span className="md:hidden text-gray-500 mr-2">Total: </span>
-                    ${(item.product.price * item.quantity).toFixed(2)}
+                    ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
                   </div>
                 </div>
               ))}
@@ -112,7 +112,7 @@ const CartSummary = () => {
               <div className="flex flex-col space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>₹{subtotal.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
@@ -127,7 +127,7 @@ const CartSummary = () => {
             <div className="border-t pt-4 mb-6">
               <div className="flex justify-between text-lg font-medium">
                 <span>Total</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>₹{subtotal.toLocaleString('en-IN')}</span>
               </div>
             </div>
             <Button asChild className="w-full bg-wood-600 hover:bg-wood-700">

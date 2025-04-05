@@ -2,7 +2,16 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, AlertCircle, Sofa, Lightbulb, Palette, Utensils, Bath, TreePine } from 'lucide-react';
 import { toast } from 'sonner';
-import { mockCategories, Category } from '@/data/mockCategories';
+import { api } from '@/services/api';
+
+interface Category {
+  _id: string;
+  name: string;
+  description: string;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 // Map of category slugs to icons
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -20,17 +29,13 @@ const Categories = () => {
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    // Simulate API call with a delay
     const fetchCategories = async () => {
       try {
         setIsLoading(true);
         setError(null);
         
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Use mock data
-        setCategories(mockCategories);
+        const response = await api.get('/categories');
+        setCategories(response);
       } catch (error) {
         console.error('Failed to fetch categories:', error);
         setError('Failed to load categories. Please try again later.');
@@ -50,57 +55,32 @@ const Categories = () => {
       </div>
     );
   }
-  
+
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 flex items-center">
-          <AlertCircle className="h-6 w-6 text-red-500 mr-3" />
-          <p className="text-red-700">{error}</p>
-        </div>
+      <div className="container mx-auto px-4 py-12 flex flex-col items-center justify-center">
+        <AlertCircle className="h-8 w-8 text-red-500 mb-4" />
+        <p className="text-red-500">{error}</p>
       </div>
     );
   }
-  
-  if (categories.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-serif font-semibold mb-8">Shop by Category</h1>
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
-          <p className="text-gray-600">No categories found. Please check back later.</p>
-        </div>
-      </div>
-    );
-  }
-  
+
   return (
     <div className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl font-serif font-semibold mb-8">Shop by Category</h1>
-      
+      <h1 className="text-3xl font-bold mb-8">Shop by Category</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((category) => (
-          <Link 
-            key={category._id} 
-            to={`/shop?category=${encodeURIComponent(category.slug)}`}
-            className="group block"
+          <Link
+            key={category._id}
+            to={`/shop?category=${category.slug}`}
+            className="group block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
           >
-            <div className="relative overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white h-full">
-              <div className="p-6 flex flex-col h-full">
-                <div className="flex items-center mb-4">
-                  <div className="bg-wood-50 p-3 rounded-full mr-4 text-wood-600 group-hover:text-wood-700 transition-colors">
-                    {categoryIcons[category.slug] || <Palette className="h-8 w-8" />}
-                  </div>
-                  <h2 className="text-2xl font-medium text-wood-600 group-hover:text-wood-700 transition-colors">
-                    {category.name}
-                  </h2>
-                </div>
-                <p className="text-gray-600 flex-grow">{category.description}</p>
-                <div className="mt-4 text-wood-600 font-medium group-hover:text-wood-700 transition-colors">
-                  Shop Now →
-                </div>
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-wood-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+            <div className="flex items-center mb-4">
+              {categoryIcons[category.slug] || <Palette className="h-8 w-8" />}
+              <h2 className="text-xl font-semibold ml-3">{category.name}</h2>
             </div>
+            <p className="text-gray-600 mb-4">{category.description}</p>
+            <span className="text-primary-600 group-hover:underline">Shop Now</span>
           </Link>
         ))}
       </div>

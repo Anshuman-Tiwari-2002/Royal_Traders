@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { api } from '@/services/api';
 
 interface Product {
   _id: string;
@@ -26,7 +26,7 @@ export function ProductManagement() {
 
   const fetchProducts = async () => {
     try {
-      const data = await api.get('/api/products') as Product[];
+      const data = await api.get('/products') as Product[];
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -36,7 +36,7 @@ export function ProductManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post('/api/products', newProduct);
+      await api.post('/products', newProduct);
       setNewProduct({
         name: '',
         description: '',
@@ -52,7 +52,7 @@ export function ProductManagement() {
 
   const handleDelete = async (id: string) => {
     try {
-      await api.delete(`/api/products/${id}`);
+      await api.delete(`/products/${id}`);
       fetchProducts();
     } catch (error) {
       console.error('Error deleting product:', error);

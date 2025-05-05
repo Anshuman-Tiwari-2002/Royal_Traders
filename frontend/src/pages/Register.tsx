@@ -8,22 +8,30 @@ const Register: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { register, googleLogin } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setIsSubmitting(true);
     
     if (password !== confirmPassword) {
       setError('Passwords do not match');
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      await register(name, email, password);
-      navigate('/account');
+      const result = await register(name, email, password);
+      if (result.success) {
+        navigate('/account');
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to register');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -63,6 +71,7 @@ const Register: React.FC = () => {
                 placeholder="Full name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={isSubmitting}
               />
             </div>
             <div>
@@ -79,6 +88,7 @@ const Register: React.FC = () => {
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubmitting}
               />
             </div>
             <div>
@@ -95,11 +105,12 @@ const Register: React.FC = () => {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isSubmitting}
               />
             </div>
             <div>
               <label htmlFor="confirm-password" className="sr-only">
-                Confirm password
+                Confirm Password
               </label>
               <input
                 id="confirm-password"
@@ -108,9 +119,10 @@ const Register: React.FC = () => {
                 autoComplete="new-password"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Confirm password"
+                placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -118,9 +130,10 @@ const Register: React.FC = () => {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting}
             >
-              Create account
+              {isSubmitting ? 'Creating account...' : 'Create account'}
             </button>
           </div>
         </form>

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CartItem, Product } from '../types';
 import { toast } from 'sonner';
-import { cartService } from '../services/cartService';
+import api from '@/lib/api';
 
 interface CartContextType {
   items: CartItem[];
@@ -21,59 +21,27 @@ export const CartProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    let isMounted = true;
-    
-    const initializeCart = async () => {
+    const fetchCart = async () => {
       try {
         setIsLoading(true);
-        const storedCart = localStorage.getItem('cart');
-        if (storedCart && isMounted) {
-          try {
-            setItems(JSON.parse(storedCart));
-          } catch (error) {
-            console.error('Failed to parse cart from localStorage:', error);
-            setItems([]);
-          }
-        }
+        const response = await api.get('/users/cart');
+        setItems(response.data);
       } catch (error) {
-        if (isMounted) {
-          console.error('Failed to initialize cart:', error);
-          toast.error('Failed to load cart');
-        }
+        console.error('Failed to fetch cart:', error);
+        toast.error('Failed to load cart');
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
     
-    initializeCart();
-    
-    return () => {
-      isMounted = false;
-    };
+    fetchCart();
   }, []);
   
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(items));
-  }, [items]);
-
   const addToCart = async (product: Product, quantity: number) => {
     try {
-      setItems(prevItems => {
-        const existingItemIndex = prevItems.findIndex(item => item.product._id === product._id);
-        
-        if (existingItemIndex >= 0) {
-          const updatedItems = [...prevItems];
-          updatedItems[existingItemIndex] = {
-            ...updatedItems[existingItemIndex],
-            quantity: updatedItems[existingItemIndex].quantity + quantity
-          };
-          return updatedItems;
-        } else {
-          return [...prevItems, { product, quantity }];
-        }
-      });
+      await api.post('/users/cart', { productId: product._id, quantity });
+      const response = await api.get('/users/cart');
+      setItems(response.data);
       toast.success(`Added ${product.name} to cart`);
     } catch (error) {
       console.error('Failed to add item to cart:', error);
@@ -84,7 +52,9 @@ export const CartProvider: React.FC<{children: ReactNode}> = ({ children }) => {
 
   const removeFromCart = async (productId: string) => {
     try {
-      setItems(prevItems => prevItems.filter(item => item.product._id !== productId));
+      await api.delete(`/users/cart/${productId}`);
+      const response = await api.get('/users/cart');
+      setItems(response.data);
       const item = items.find(i => i.product._id === productId);
       if (item) {
         toast.info(`Removed ${item.product.name} from cart`);
@@ -103,13 +73,9 @@ export const CartProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     }
 
     try {
-      setItems(prevItems => 
-        prevItems.map(item =>
-          item.product._id === productId
-            ? { ...item, quantity }
-            : item
-        )
-      );
+      await api.put(`/users/cart/${productId}`, { quantity });
+      const response = await api.get('/users/cart');
+      setItems(response.data);
     } catch (error) {
       console.error('Failed to update item quantity:', error);
       toast.error('Failed to update item quantity');
@@ -119,6 +85,7 @@ export const CartProvider: React.FC<{children: ReactNode}> = ({ children }) => {
 
   const clearCart = async () => {
     try {
+      await api.delete('/users/cart');
       setItems([]);
       toast.info('Cart cleared');
     } catch (error) {

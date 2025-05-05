@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   ShoppingCart, 
   Search, 
   Menu, 
   X, 
-  Heart
+  Heart,
+  User,
+  LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,9 +33,15 @@ const navigationItems = [
 
 const Navbar = () => {
   const { totalItems } = useCart();
+  const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +99,40 @@ const Navbar = () => {
               </div>
             </form>
 
+            {/* Wishlist */}
+            {user && (
+              <Link to="/wishlist" className="text-gray-700 hover:text-wood-600">
+                <Heart className="h-6 w-6" />
+              </Link>
+            )}
+
+            {/* User Account */}
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <Link to="/account" className="text-gray-700 hover:text-wood-600">
+                  <User className="h-6 w-6" />
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-700 hover:text-wood-600"
+                >
+                  <LogOut className="h-6 w-6" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link to="/login" className="text-gray-700 hover:text-wood-600">
+                  Login
+                </Link>
+                <Link 
+                  to="/register" 
+                  className="bg-wood-600 text-white px-4 py-2 rounded-md hover:bg-wood-700"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
+
             {/* Cart */}
             <Link to="/cart" className="relative">
               <ShoppingCart className="h-6 w-6 text-gray-700 hover:text-wood-600" />
@@ -138,6 +181,50 @@ const Navbar = () => {
             </form>
             <nav className="flex flex-col space-y-4">
               {renderNavigationLinks(true)}
+              {user ? (
+                <>
+                  <Link
+                    to="/wishlist"
+                    className="text-gray-700 hover:text-wood-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Wishlist
+                  </Link>
+                  <Link
+                    to="/account"
+                    className="text-gray-700 hover:text-wood-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    My Account
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="text-gray-700 hover:text-wood-600 text-left"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="text-gray-700 hover:text-wood-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="text-gray-700 hover:text-wood-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         </div>

@@ -10,6 +10,9 @@ import { JwtPayload } from 'jsonwebtoken';
 
 const router = express.Router();
 
+// Initialize passport
+router.use(passport.initialize());
+
 // Configure Google OAuth Strategy
 passport.use(
   new GoogleStrategy(
@@ -17,9 +20,12 @@ passport.use(
       clientID: config.google.clientId!,
       clientSecret: config.google.clientSecret!,
       callbackURL: config.google.callbackUrl,
+      passReqToCallback: true
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (req, accessToken, refreshToken, profile, done) => {
       try {
+        console.log('Google profile:', profile);
+        
         // Check if user already exists
         let user = await User.findOne({ googleId: profile.id });
 
@@ -45,9 +51,10 @@ passport.use(
           password: Math.random().toString(36).slice(-8), // Generate random password
         });
 
-        done(null, user);
+        return done(null, user);
       } catch (error) {
-        done(error as Error);
+        console.error('Google OAuth error:', error);
+        return done(error as Error);
       }
     }
   )
@@ -58,10 +65,21 @@ router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({ 
+        message: 'Please provide all required fields',
+        fields: { name, email, password }
+      });
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ 
+        message: 'User already exists',
+        field: 'email'
+      });
     }
 
     // Create new user
@@ -74,17 +92,47 @@ router.post('/register', async (req, res) => {
     // Generate token
     const token = generateToken(user);
 
+    // Return success response
     res.status(201).json({
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-      token,
+      success: true,
+      message: 'User registered successfully',
+      data: {
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+        token
+      }
     });
-  } catch (error) {
-    res.status(500).json({ message: 'Error creating user' });
+  } catch (error: any) {
+    console.error('Registration error:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        message: 'Validation error',
+        errors: Object.values(error.errors).map((err: any) => ({
+          field: err.path,
+          message: err.message
+        }))
+      });
+    }
+
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: 'Email already exists',
+        field: 'email'
+      });
+    }
+
+    // Handle other errors
+    res.status(500).json({ 
+      message: 'Error creating user',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
@@ -149,16 +197,23 @@ router.get('/me', async (req, res) => {
 });
 
 // Google OAuth routes
-router.get(
-  '/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
+router.get('/google',
+  passport.authenticate('google', { 
+    scope: ['profile', 'email'],
+    session: false
+  })
 );
 
-router.get(
-  '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
+router.get('/google/callback',
+  passport.authenticate('google', { 
+    failureRedirect: '/login',
+    session: false
+  }),
   (req, res) => {
-    const token = generateToken(req.user as IUser);
+    const user = req.user as IUser;
+    const token = generateToken(user);
+    
+    // Redirect to frontend with token
     res.redirect(`${config.frontendUrl}/auth/callback?token=${token}`);
   }
 );

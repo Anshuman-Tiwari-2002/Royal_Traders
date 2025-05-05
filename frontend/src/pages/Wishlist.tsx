@@ -1,131 +1,117 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { authenticatedFetch } from '../services/authService';
-import { API_BASE_URL } from '../config';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import api from '@/lib/api';
+import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 interface WishlistItem {
   _id: string;
-  product: {
-    _id: string;
-    name: string;
-    image: string;
-    price: number;
-    description: string;
-  };
+  name: string;
+  price: number;
+  image: string;
 }
 
-export function Wishlist() {
+const Wishlist: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
     const fetchWishlist = async () => {
       try {
-        const response = await authenticatedFetch(`${API_BASE_URL}/wishlist`);
-        if (response.ok) {
-          const data = await response.json();
-          setWishlist(data);
-        } else {
-          toast.error('Failed to fetch wishlist');
-        }
-      } catch (error) {
-        toast.error('An error occurred while fetching wishlist');
-      } finally {
+        const response = await api.get('/users/wishlist');
+        setItems(response.data);
+        setLoading(false);
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Failed to fetch wishlist');
         setLoading(false);
       }
     };
 
     fetchWishlist();
-  }, []);
+  }, [user, navigate]);
 
-  const handleRemoveFromWishlist = async (productId: string) => {
+  const removeFromWishlist = async (productId: string) => {
     try {
-      const response = await authenticatedFetch(`${API_BASE_URL}/wishlist/${productId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setWishlist(wishlist.filter(item => item.product._id !== productId));
-        toast.success('Item removed from wishlist');
-      } else {
-        toast.error('Failed to remove item from wishlist');
-      }
-    } catch (error) {
-      toast.error('An error occurred while removing item from wishlist');
+      await api.delete(`/users/wishlist/${productId}`);
+      setItems(items.filter(item => item._id !== productId));
+      toast.success('Product removed from wishlist');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to remove item');
     }
   };
 
-  if (loading) {
+  const addToCart = async (productId: string) => {
+    try {
+      await api.post('/cart', { productId, quantity: 1 });
+      toast.success('Product added to cart');
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add product to cart');
+    }
+  };
+
+  if (loading) return <div className="text-center">Loading...</div>;
+  if (error) return <div className="text-red-500 text-center">{error}</div>;
+
+  if (items.length === 0) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="text-center">Loading wishlist...</div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <Heart className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+          <h2 className="text-2xl font-bold mb-4">Your wishlist is empty</h2>
+          <p className="text-gray-600 mb-4">Add products to your wishlist to save them for later</p>
+          <Link to="/shop" className="text-wood-600 hover:text-wood-700">
+            Browse Products
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8">My Wishlist</h1>
-      {wishlist.length === 0 ? (
-        <Card>
-          <CardContent className="py-8">
-            <p className="text-center text-gray-500">Your wishlist is empty</p>
-            <Button
-              onClick={() => navigate('/shop')}
-              className="mt-4 mx-auto block"
-            >
-              Continue Shopping
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {wishlist.map((item) => (
-            <Card key={item._id}>
-              <CardHeader>
-                <div className="relative">
-                  <img
-                    src={item.product.image}
-                    alt={item.product.name}
-                    className="w-full h-48 object-cover rounded-t-lg"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={() => handleRemoveFromWishlist(item.product._id)}
-                  >
-                    ×
-                  </Button>
-                </div>
-                <CardTitle className="mt-4">{item.product.name}</CardTitle>
-                <CardDescription>${item.product.price.toFixed(2)}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 mb-4">{item.product.description}</p>
-                <Button
-                  className="w-full"
-                  onClick={() => navigate(`/product/${item.product._id}`)}
-                >
-                  View Product
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">My Wishlist</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {items.map((item) => (
+          <div key={item._id} className="bg-white rounded-lg shadow-md p-4">
+            <img src={item.image} alt={item.name} className="w-full h-48 object-cover rounded-md mb-4" />
+            <h2 className="text-xl font-semibold mb-2">{item.name}</h2>
+            <p className="text-gray-600 mb-4">${item.price}</p>
+            <div className="flex justify-between">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => addToCart(item._id)}
+                className="flex items-center"
+              >
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Add to Cart
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => removeFromWishlist(item._id)}
+                className="text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
-} 
+};
+
+export default Wishlist; 

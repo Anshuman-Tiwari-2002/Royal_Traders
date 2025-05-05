@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { api, setAuthToken } from '@/lib/api';
+import api, { setAuthToken } from '@/lib/api';
 
 interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   role: string;
@@ -13,7 +13,7 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<{ success: boolean; user: User }>;
   logout: () => void;
   googleLogin: () => void;
 }
@@ -42,7 +42,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error('Error fetching user:', err);
       localStorage.removeItem('token');
-      setAuthToken(null);
     } finally {
       setLoading(false);
     }
@@ -51,30 +50,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     try {
       setError(null);
+      console.log('Attempting login with:', { email });
       const response = await api.post('/auth/login', { email, password });
-      const { token, user } = response.data;
+      console.log('Login response:', response.data);
       
-      localStorage.setItem('token', token);
-      setAuthToken(token);
-      setUser(user);
+      if (response.data.user && response.data.token) {
+        console.log('Login successful, setting token and user');
+        localStorage.setItem('token', response.data.token);
+        setAuthToken(response.data.token);
+        setUser(response.data.user);
+      } else {
+        console.error('Invalid response structure:', response.data);
+        throw new Error('Invalid response structure from server');
+      }
     } catch (err: any) {
+      console.error('Login error details:', {
+        message: err.message,
+        response: err.response,
+        status: err.response?.status
+      });
       setError(err.response?.data?.message || 'An error occurred during login');
       throw err;
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, email: string, password: string): Promise<{ success: boolean; user: User }> => {
     try {
       setError(null);
+      console.log('Attempting registration with:', { name, email });
       const response = await api.post('/auth/register', { name, email, password });
-      const { token, user } = response.data;
+      console.log('Registration response:', response);
       
-      localStorage.setItem('token', token);
-      setAuthToken(token);
-      setUser(user);
+      if (response.data && response.data.token) {
+        console.log('Registration successful, setting token and user');
+        localStorage.setItem('token', response.data.token);
+        setAuthToken(response.data.token);
+        setUser(response.data.user);
+        return { success: true, user: response.data.user };
+      } else {
+        console.error('Invalid registration response structure:', response);
+        throw new Error(response.data?.message || 'Registration failed');
+      }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'An error occurred during registration');
-      throw err;
+      console.error('Registration error details:', {
+        message: err.message,
+        response: err.response,
+        status: err.response?.status
+      });
+      const errorMessage = err.response?.data?.message || 'An error occurred during registration';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 

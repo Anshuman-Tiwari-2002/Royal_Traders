@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product } from '../types/product';
+import api from '@/lib/api';
+import { useAuth } from './AuthContext';
 
 interface WishlistContextType {
   wishlist: Product[];
@@ -24,32 +26,35 @@ export function useWishlist(): WishlistContextType {
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const storedWishlist = localStorage.getItem('wishlist');
-    if (storedWishlist) {
-      try {
-        setWishlist(JSON.parse(storedWishlist));
-      } catch (error) {
-        console.error('Error parsing wishlist from localStorage:', error);
+    const fetchWishlist = async () => {
+      if (!user) {
         setWishlist([]);
+        setIsLoading(false);
+        return;
       }
-    }
-    setIsLoading(false);
-  }, []);
 
-  useEffect(() => {
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
+      try {
+        setIsLoading(true);
+        const response = await api.get('/users/wishlist');
+        setWishlist(response.data);
+      } catch (error) {
+        console.error('Error fetching wishlist:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWishlist();
+  }, [user]);
 
   const addToWishlist = async (productId: string) => {
     try {
-      setWishlist(prevWishlist => {
-        if (!prevWishlist.some(product => product._id === productId)) {
-          return [...prevWishlist, { _id: productId } as Product];
-        }
-        return prevWishlist;
-      });
+      await api.post(`/users/wishlist/${productId}`);
+      const response = await api.get('/users/wishlist');
+      setWishlist(response.data);
     } catch (error) {
       console.error('Error adding to wishlist:', error);
       throw error;
@@ -58,9 +63,9 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const removeFromWishlist = async (productId: string) => {
     try {
-      setWishlist(prevWishlist => 
-        prevWishlist.filter(product => product._id !== productId)
-      );
+      await api.delete(`/users/wishlist/${productId}`);
+      const response = await api.get('/users/wishlist');
+      setWishlist(response.data);
     } catch (error) {
       console.error('Error removing from wishlist:', error);
       throw error;

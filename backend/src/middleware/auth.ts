@@ -1,20 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/User';
+import User, { IUser } from '../models/User';
+import mongoose from 'mongoose';
 
 interface JwtPayload {
   id: string;
 }
 
-declare global {
-  namespace Express {
-    interface Request {
+export interface AuthenticatedRequest extends Request {
       user?: any;
-    }
-  }
 }
 
-export const protect = async (req: Request, res: Response, next: NextFunction) => {
+export const protect = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     let token;
 
@@ -45,10 +42,10 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
 };
 
 export const authorize = (...roles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    if (!roles.includes(req.user.role)) {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({ 
-        message: `User role ${req.user.role} is not authorized to access this route`
+        message: `User role ${req.user?.role} is not authorized to access this route`
       });
     }
     next();

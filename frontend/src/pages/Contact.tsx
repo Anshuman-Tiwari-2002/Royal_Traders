@@ -62,9 +62,9 @@ const Contact = () => {
                   <div>
                     <h3 className="font-medium text-wood-800">Our Location</h3>
                     <p className="text-gray-600">
-                      123 Woodland Drive<br />
-                      Timber City, TC 12345<br />
-                      United States
+                       Noida<br />
+                       UP, 201301<br />
+                      India
                     </p>
                   </div>
                 </div>
@@ -73,7 +73,7 @@ const Contact = () => {
                   <Phone className="text-wood-600 mr-4 mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="font-medium text-wood-800">Phone Number</h3>
-                    <p className="text-gray-600">(555) 123-4567</p>
+                    <p className="text-gray-600">+91 9876543210</p>
                   </div>
                 </div>
                 
@@ -81,7 +81,7 @@ const Contact = () => {
                   <Mail className="text-wood-600 mr-4 mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="font-medium text-wood-800">Email Address</h3>
-                    <p className="text-gray-600">contact@royaltraders.com</p>
+                    <p className="text-gray-600">contact@royaltraders@gmail.com</p>
                   </div>
                 </div>
                 
@@ -130,7 +130,7 @@ const Contact = () => {
                       type="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="john@example.com"
+                      placeholder="john@gmail.com"
                       required
                     />
                   </div>

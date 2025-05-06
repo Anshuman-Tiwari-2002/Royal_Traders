@@ -13,18 +13,18 @@ export const categoryService = {
   // Get all categories
   getCategories: async (): Promise<Category[]> => {
     const response = await api.get('/categories');
-    return response;
+    return response.data;
   },
 
   // Get a single category
   getCategory: async (id: string): Promise<Category> => {
     const response = await api.get(`/categories/${id}`);
-    return response;
+    return response.data;
   },
 
   // Get category by slug
   getCategoryBySlug: async (slug: string): Promise<Category> => {
     const response = await api.get(`/categories/slug/${slug}`);
-    return response;
+    return response.data;
   }
 }; 

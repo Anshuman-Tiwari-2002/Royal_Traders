@@ -33,6 +33,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Account from "./pages/Account";
 import Wishlist from "./pages/Wishlist";
+import Orders from "./pages/Orders";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/account" element={<Account />} />
       <Route path="/wishlist" element={<Wishlist />} />
+      <Route path="/Orders" element={<Orders />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

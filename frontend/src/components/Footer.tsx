@@ -27,7 +27,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-medium mb-4 text-white font-bold">Quick Links</h3>
+            <h3 className="text-lg mb-4 text-white font-bold">Quick Links</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/" className="text-amber-100 hover:text-white transition-colors">Home</Link>
@@ -49,7 +49,7 @@ const Footer = () => {
 
           {/* Customer Service */}
           <div>
-            <h3 className="text-lg font-medium mb-4 text-white font-bold">Customer Service</h3>
+            <h3 className="text-lg mb-4 text-white font-bold">Customer Service</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/faq" className="text-amber-100 hover:text-white transition-colors">FAQ</Link>
@@ -71,19 +71,19 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-lg font-medium mb-4 text-white font-bold">Contact Us</h3>
+            <h3 className="text-lg mb-4 text-white font-bold">Contact Us</h3>
             <div className="space-y-3">
               <div className="flex items-start space-x-3">
                 <MapPin size={20} className="text-amber-300 flex-shrink-0 mt-1" />
-                <span className="text-amber-100">123 Woodland Drive, Timber City, TC 12345</span>
+                <span className="text-amber-100"> Noida, UP, 201301, India</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone size={20} className="text-amber-300" />
-                <span className="text-amber-100">(555) 123-4567</span>
+                <span className="text-amber-100">+91 9876543210</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail size={20} className="text-amber-300" />
-                <span className="text-amber-100">contact@royaltraders.com</span>
+                <span className="text-amber-100">contact@royaltraders@gmail.com</span>
               </div>
             </div>
           </div>

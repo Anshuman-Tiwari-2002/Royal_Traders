@@ -13,7 +13,6 @@ interface Category {
   updatedAt: string;
 }
 
-// Map of category slugs to icons
 const categoryIcons: Record<string, React.ReactNode> = {
   'furniture': <Sofa className="h-8 w-8" />,
   'lighting': <Lightbulb className="h-8 w-8" />,
@@ -27,15 +26,25 @@ const Categories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        
+  
         const response = await api.get('/categories');
-        setCategories(response);
+        console.log('API Response:', response); // Debugging log
+  
+        // Check if the response is already an array
+        if (Array.isArray(response)) {
+          setCategories(response); // Use the raw response
+        } else if (Array.isArray(response.data)) {
+          setCategories(response.data); // Use the data property if it exists
+        } else {
+          console.error('Unexpected API response format:', response);
+          setError('Invalid data format received from the server.');
+        }
       } catch (error) {
         console.error('Failed to fetch categories:', error);
         setError('Failed to load categories. Please try again later.');
@@ -44,10 +53,10 @@ const Categories = () => {
         setIsLoading(false);
       }
     };
-    
+  
     fetchCategories();
   }, []);
-  
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-12 flex justify-center">
@@ -69,20 +78,24 @@ const Categories = () => {
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-8">Shop by Category</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((category) => (
-          <Link
-            key={category._id}
-            to={`/shop?category=${category.slug}`}
-            className="group block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
-          >
-            <div className="flex items-center mb-4">
-              {categoryIcons[category.slug] || <Palette className="h-8 w-8" />}
-              <h2 className="text-xl font-semibold ml-3">{category.name}</h2>
-            </div>
-            <p className="text-gray-600 mb-4">{category.description}</p>
-            <span className="text-primary-600 group-hover:underline">Shop Now</span>
-          </Link>
-        ))}
+        {categories && categories.length > 0 ? (
+          categories.map((category) => (
+            <Link
+              key={category._id}
+              to={`/shop?category=${category.slug}`}
+              className="group block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center mb-4">
+                {categoryIcons[category.slug] || <Palette className="h-8 w-8" />}
+                <h2 className="text-xl font-semibold ml-3">{category.name}</h2>
+              </div>
+              <p className="text-gray-600 mb-4">{category.description}</p>
+              <span className="text-primary-600 group-hover:underline">Shop Now</span>
+            </Link>
+          ))
+        ) : (
+          <p className="text-gray-500">No categories available.</p>
+        )}
       </div>
     </div>
   );
